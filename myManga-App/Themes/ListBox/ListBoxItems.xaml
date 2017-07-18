@@ -7,14 +7,46 @@
     xmlns:objects="clr-namespace:myMangaSiteExtension.Objects;assembly=myMangaSiteExtension"
     xmlns:utils="clr-namespace:myMangaSiteExtension.Utilities;assembly=myMangaSiteExtension">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/myManga;component/Themes/CoreResourceDictionary.xaml"/>
-        <ResourceDictionary Source="/myManga;component/Themes/ProgressBar/ProgressBar.xaml"/>
+        <ResourceDictionary Source="/myManga;component/Resources/Images/OpenIconic.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
     <converters:StringListToCSV x:Key="StringListToCSV"/>
     <converters:LocationListToCSV x:Key="LocationListToCSV"/>
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
+    <Style TargetType="{x:Type ListBoxItem}" x:Key="ChapterReaderView_UnfocusableListBoxItem">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                    <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="true">
+                            <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="true"/>
+                                <Condition Property="Selector.IsSelectionActive" Value="false"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}}"/>
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
     <Style TargetType="{x:Type ListBoxItem}">
         <Setter Property="BorderBrush" Value="{DynamicResource window-theme-primary}"/>
         <Setter Property="BorderThickness" Value="3"/>
@@ -65,13 +97,12 @@
                                         </LinearGradientBrush>
                                     </Rectangle.Fill>
                                 </Rectangle>
-                                <TextBlock
-                                    Text="{DynamicResource oi-check}"
-                                    FontFamily="{DynamicResource OpenIconic}" 
-                                    FontSize="14" 
-                                    Foreground="{DynamicResource window-background}" 
-                                    Grid.Column="1"
-                                    Margin="-1,0,0,-1"/>
+                                <Viewbox
+                                    x:Name="CheckIcon"
+                                    Margin="-1,0,0,-1">
+                                    <Path Style="{StaticResource iconic-check}" Margin="2"
+                                          Fill="{DynamicResource window-background}"/>
+                                </Viewbox>
                             </Grid>
                         </Grid>
                     </Border>
@@ -82,148 +113,6 @@
                             <Setter TargetName="TRCornerTick" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource window-theme-secondary}"/>
-                            <Setter TargetName="ItemBorder" Property="TextElement.Foreground" Value="{DynamicResource window-theme-primary}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}" x:Key="SettingsView_SiteExtensionInformationObjectListBoxItem">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                    <ControlTemplate.Resources>
-                        <converters:CommandParameterStringFormat x:Key="CommandParameterStringFormat"/>
-                    </ControlTemplate.Resources>
-                    <Border
-                        x:Name="ItemBorder"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="0"
-                        Padding="{TemplateBinding BorderThickness}"
-                        Background="{TemplateBinding Background}"
-                        TextElement.Foreground="{TemplateBinding Foreground}">
-                        <Grid
-                            x:Name="Content"
-                            Margin="{TemplateBinding Padding}"
-                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            TextBlock.TextAlignment="Left">
-                            <StackPanel Orientation="Horizontal">
-                                <Controls:MetroToggleButton 
-                                    x:Name="EnabledButton"
-                                    Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
-                                    Content="{DynamicResource oi-x}"
-                                    FontFamily="{DynamicResource OpenIconic}"
-                                    IsChecked="{Binding Enabled, Mode=TwoWay}"/>
-                                <TextBlock Text="{Binding Name}" FontSize="16" VerticalAlignment="Center" Margin="5,0,0,0"/>
-                            </StackPanel>
-                            <!-- Start -->
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Controls:MetroButton
-                                    x:Name="UpArrow"
-                                    Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
-									FontFamily="{DynamicResource OpenIconic}" 
-									Content="{DynamicResource oi-arrow-thick-top}"
-									Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}}"
-									CommandParameter="{Binding Name, ConverterParameter=Site:\{0\}, Converter={StaticResource CommandParameterStringFormat}}"/>
-                                <Controls:MetroButton
-                                    x:Name="DownArrow"
-                                    Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
-									FontFamily="{DynamicResource OpenIconic}" 
-									Content="{DynamicResource oi-arrow-thick-bottom}"
-									Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}}"
-									CommandParameter="{Binding Name, ConverterParameter=Site:\{0\}, Converter={StaticResource CommandParameterStringFormat}}"/>
-                            </StackPanel>
-                            <!-- End -->
-                        </Grid>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <DataTrigger Binding="{Binding Enabled}" Value="True">
-                            <Setter TargetName="EnabledButton" Property="Content" Value="{DynamicResource oi-check}"/>
-                        </DataTrigger>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="ItemBorder" Property="BorderThickness" Value="{Binding Path=BorderThickness, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}"/>
-                            <Setter TargetName="ItemBorder" Property="Padding" Value="0"/>
-                        </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="EnabledButton" Property="Background" Value="{DynamicResource window-theme-secondary}"/>
-                            <Setter TargetName="UpArrow" Property="Background" Value="{DynamicResource window-theme-secondary}"/>
-                            <Setter TargetName="DownArrow" Property="Background" Value="{DynamicResource window-theme-secondary}"/>
-                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource window-theme-secondary}"/>
-                            <Setter TargetName="ItemBorder" Property="TextElement.Foreground" Value="{DynamicResource window-theme-primary}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}" x:Key="SettingsView_DatabaseExtensionInformationObjectListBoxItem">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                    <ControlTemplate.Resources>
-                        <converters:CommandParameterStringFormat x:Key="CommandParameterStringFormat"/>
-                    </ControlTemplate.Resources>
-                    <Border
-                        x:Name="ItemBorder"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="0"
-                        Padding="{TemplateBinding BorderThickness}"
-                        Background="{TemplateBinding Background}"
-                        TextElement.Foreground="{TemplateBinding Foreground}">
-                        <Grid
-                            x:Name="Content"
-                            Margin="{TemplateBinding Padding}"
-                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            TextBlock.TextAlignment="Left">
-                            <StackPanel Orientation="Horizontal">
-                                <Controls:MetroToggleButton 
-                                    x:Name="EnabledButton"
-                                    Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
-                                    Content="{DynamicResource oi-x}"
-                                    FontFamily="{DynamicResource OpenIconic}"
-                                    IsChecked="{Binding Enabled, Mode=TwoWay}"/>
-                                <TextBlock Text="{Binding Name}" FontSize="16" VerticalAlignment="Center" Margin="5,0,0,0"/>
-                            </StackPanel>
-                            <!-- Start -->
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Controls:MetroButton
-                                    x:Name="UpArrow"
-                                    Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
-									FontFamily="{DynamicResource OpenIconic}" 
-									Content="{DynamicResource oi-arrow-thick-top}"
-									Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}}"
-									CommandParameter="{Binding Name, ConverterParameter=Database:\{0\}, Converter={StaticResource CommandParameterStringFormat}}"/>
-                                <Controls:MetroButton
-                                    x:Name="DownArrow"
-                                    Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
-									FontFamily="{DynamicResource OpenIconic}" 
-									Content="{DynamicResource oi-arrow-thick-bottom}"
-									Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}}"
-									CommandParameter="{Binding Name, ConverterParameter=Database:\{0\}, Converter={StaticResource CommandParameterStringFormat}}"/>
-                            </StackPanel>
-                            <!-- End -->
-                        </Grid>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <DataTrigger Binding="{Binding Enabled}" Value="True">
-                            <Setter TargetName="EnabledButton" Property="Content" Value="{DynamicResource oi-check}"/>
-                        </DataTrigger>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="ItemBorder" Property="BorderThickness" Value="{Binding Path=BorderThickness, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}"/>
-                            <Setter TargetName="ItemBorder" Property="Padding" Value="0"/>
-                        </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="EnabledButton" Property="Background" Value="{DynamicResource window-theme-secondary}"/>
-                            <Setter TargetName="UpArrow" Property="Background" Value="{DynamicResource window-theme-secondary}"/>
-                            <Setter TargetName="DownArrow" Property="Background" Value="{DynamicResource window-theme-secondary}"/>
                             <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource window-theme-secondary}"/>
                             <Setter TargetName="ItemBorder" Property="TextElement.Foreground" Value="{DynamicResource window-theme-primary}"/>
                         </Trigger>
